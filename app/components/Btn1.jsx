@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import ScrollLink from "./ScrollLink";
 
 /**
  * Primary brand CTA.
@@ -37,6 +38,16 @@ const Btn1 = ({
       <button onClick={onClick} className={classes}>
         {inner}
       </button>
+    );
+  }
+
+  // In-page targets scroll programmatically — a hash link won't re-trigger
+  // once the URL already carries that hash.
+  if (href.startsWith("#")) {
+    return (
+      <ScrollLink href={href} className={classes}>
+        {inner}
+      </ScrollLink>
     );
   }
 

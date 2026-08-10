@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link";
+import ScrollLink from "../ScrollLink";
 import Wrapper from "../wrapper";
 import Reveal from "../motion/Reveal";
 import Counter from "../motion/Counter";
@@ -175,7 +175,7 @@ const Solutions = () => {
 
                     {/* CTA pinned to the bottom so both cards line up */}
                     <div className="relative mt-auto pt-8">
-                      <Link
+                      <ScrollLink
                         href="#contact"
                         className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition ${
                           featured
@@ -185,7 +185,7 @@ const Solutions = () => {
                       >
                         Savoir laquelle me convient
                         <LuArrowRight size={16} />
-                      </Link>
+                      </ScrollLink>
                     </div>
                   </article>
                 </Reveal>

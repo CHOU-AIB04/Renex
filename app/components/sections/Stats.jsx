@@ -2,105 +2,117 @@ import React from "react";
 import Wrapper from "../wrapper";
 import Reveal from "../motion/Reveal";
 import Counter from "../motion/Counter";
-import { LuShieldCheck, LuSunMedium, LuTrendingDown, LuStar } from "react-icons/lu";
 
 /**
- * Bento stats grid.
- * Oversized ultra-thin figures + thin line icons, one tall dark tile against
- * light tiles. Figures per the client report (RNO-RP213).
+ * Key figures — centred heading, then a row of oversized numbers each backed by
+ * a small rotated-square accent.
+ *
+ * Layout: 5 across on desktop; on mobile the first three share a row and the
+ * last two share the next (6-col grid → 2+2+2 then 3+3).
+ *
+ * All figures come from the client report (RNO-RP213).
  */
+const stats = [
+  {
+    to: 100,
+    prefix: "+",
+    label: "installations réalisées",
+    span: "col-span-2",
+  },
+  {
+    to: 30,
+    suffix: " ans",
+    label: "de garantie sur nos installations",
+    span: "col-span-2",
+  },
+  {
+    to: 60,
+    prefix: "+",
+    suffix: "%",
+    label: "d'économie sur votre facture",
+    span: "col-span-2",
+  },
+  {
+    to: 98,
+    prefix: "+",
+    label: "avis positifs",
+    span: "col-span-3",
+  },
+  {
+    // Range, so no count-up on this one
+    text: "2-5",
+    suffix: " j",
+    label: "pour installer votre système",
+    span: "col-span-3",
+  },
+];
 
-// Shared thin-stroke icon look
-const iconProps = { strokeWidth: 1 };
+/** Rotated-square accent sitting behind the top-left of each figure. */
+const Accent = ({ index }) => (
+  <span aria-hidden className="pointer-events-none absolute -left-3 -top-2">
+    <span
+      className={`block h-9 w-9 rotate-45 rounded-[6px] ${
+        index % 2 === 0 ? "bg-brand-green/35" : "bg-brand-indigo/20"
+      }`}
+    />
+    <span
+      className={`absolute left-7 top-0 block h-2.5 w-2.5 rotate-45 rounded-[2px] ${
+        index % 2 === 0 ? "bg-brand-indigo/25" : "bg-brand-green/45"
+      }`}
+    />
+  </span>
+);
 
 const Stats = () => {
   return (
     <section id="chiffres" className="surface-base section-lg">
       <Wrapper>
         <Reveal>
-          <span className="block t-eyebrow text-brand-indigo">
-            RENEX en chiffres
-          </span>
-          <h2 className="mt-4 max-w-lg t-h2 text-gray-900">
-            Des résultats, pas des promesses.
+          <h2 className="mx-auto max-w-2xl text-center t-h2 text-brand-navy">
+            Des résultats concrets,
+            <br />
+            pas des promesses.
           </h2>
         </Reveal>
 
-        {/* Equal row heights at every breakpoint so tiles never go ragged */}
-        <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 auto-rows-[200px] sm:auto-rows-[220px]">
-          {/* ---- Tall dark tile ---- */}
-          <Reveal className="sm:row-span-2 lg:col-span-2">
-            <article className="surface-ink grain relative flex h-full flex-col justify-between overflow-hidden rounded-[32px] p-8">
-              <LuShieldCheck
-                size={64}
-                {...iconProps}
-                className="text-white/70"
-              />
+        {/* Extra side padding so the row breathes inside the section */}
+        <div className="mx-auto mt-16 grid max-w-7xl grid-cols-6 gap-y-12 gap-x-4 px-2 sm:gap-x-8 sm:px-10 lg:grid-cols-5 lg:gap-x-10 lg:px-16 xl:px-0">
+          {stats.map((stat, i) => (
+            <Reveal
+              key={stat.label}
+              delay={i * 0.08}
+              className={`${stat.span} lg:col-span-1`}
+            >
+              {/* Centred on mobile, left-aligned from lg up */}
+              <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+                {/* Accent is anchored to the number, not the column, so it
+                    stays glued to it when the layout centres on mobile. */}
+                <div className="relative inline-block">
+                  <Accent index={i} />
 
-              <div>
-                <p className="text-[76px] font-extralight leading-none tracking-tight text-white tabular-nums">
-                  <Counter to={30} />
-                </p>
-                <p className="mt-4 text-sm text-white/60">ans de garantie</p>
-              </div>
-            </article>
-          </Reveal>
+                  <p className="relative text-[38px] sm:text-5xl lg:text-[52px] font-bold leading-none tracking-tight text-brand-indigo tabular-nums">
+                    {stat.text ? (
+                      <span className="flex items-center justify-center lg:justify-start">
+                        {stat.text}
+                        <span className="ml-1">{stat.suffix}</span>
+                      </span>
+                    ) : (
+                      <Counter
+                        to={stat.to}
+                        decimals={stat.decimals}
+                        prefix={stat.prefix}
+                        suffix={stat.suffix}
+                      />
+                    )}
+                  </p>
+                </div>
 
-          {/* ---- Big light tile ---- */}
-          <Reveal className="sm:row-span-2 lg:col-span-2" delay={0.08}>
-            <article className="card-light flex h-full flex-col justify-between rounded-[32px] p-8">
-              <LuSunMedium
-                size={52}
-                {...iconProps}
-                className="text-gray-300"
-              />
-
-              <div>
-                <p className="text-[72px] sm:text-[88px] font-extralight leading-[0.85] tracking-tighter text-gray-900 tabular-nums">
-                  <Counter to={100} prefix="+" />
-                </p>
-                <p className="mt-4 text-sm text-gray-500">
-                  installations réalisées
-                </p>
-              </div>
-            </article>
-          </Reveal>
-
-          {/* ---- Small tile 1 ---- */}
-          <Reveal delay={0.16}>
-            <article className="card-light flex h-full flex-col justify-between rounded-[32px] p-7">
-              <LuTrendingDown
-                size={34}
-                {...iconProps}
-                className="text-gray-300"
-              />
-
-              <div>
-                <p className="text-[42px] font-extralight leading-none tracking-tight text-gray-900 tabular-nums">
-                  <Counter to={60} suffix="%" />
-                </p>
-                <p className="mt-2.5 text-sm text-gray-500">
-                  d&apos;économie sur votre facture
+                <p className="mt-3 max-w-[150px] text-[12px] font-semibold leading-snug text-brand-indigo/75 lg:max-w-[190px]">
+                  {stat.label}
                 </p>
               </div>
-            </article>
-          </Reveal>
-
-          {/* ---- Small tile 2 ---- */}
-          <Reveal delay={0.24}>
-            <article className="card-light flex h-full flex-col justify-between rounded-[32px] p-7">
-              <LuStar size={34} {...iconProps} className="text-gray-300" />
-
-              <div>
-                <p className="text-[42px] font-extralight leading-none tracking-tight text-gray-900 tabular-nums">
-                  <Counter to={4.9} decimals={1} />
-                </p>
-                <p className="mt-2.5 text-sm text-gray-500">
-                  note moyenne sur Google
-                </p>
-              </div>
-            </article>
-          </Reveal>
+            </Reveal>
+          ))}
         </div>
       </Wrapper>
     </section>

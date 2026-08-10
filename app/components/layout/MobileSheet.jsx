@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import ScrollLink from "../ScrollLink";
 import {
   Sheet,
   SheetClose,
@@ -80,7 +81,7 @@ const MobileSheet = ({ scrolled }) => {
                       transition={{ delay: index * 0.08 }}
                     >
                       <SheetClose asChild>
-                        <Link
+                        <ScrollLink
                           href={item.href}
                           className="group flex items-center justify-between"
                         >
@@ -95,7 +96,7 @@ const MobileSheet = ({ scrolled }) => {
                             size={20}
                             className="text-white opacity-0 -translate-x-3 group-hover:translate-x-0 group-hover:opacity-100 transition-all"
                           />
-                        </Link>
+                        </ScrollLink>
                       </SheetClose>
                     </motion.div>
                   );
@@ -159,12 +160,12 @@ const MobileSheet = ({ scrolled }) => {
                 </div>
 
                 <SheetClose asChild>
-                  <Link
+                  <ScrollLink
                     href="#contact"
                     className="mt-8 block w-full rounded-full px-3 bg-white py-4 text-center font-semibold text-black hover:scale-[1.02] transition"
                   >
                     Demander mon étude gratuite
-                  </Link>
+                  </ScrollLink>
                 </SheetClose>
               </div>
             </div>

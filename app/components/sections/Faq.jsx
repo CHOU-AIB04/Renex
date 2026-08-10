@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
+import ScrollLink from "../ScrollLink";
 import Wrapper from "../wrapper";
 import Reveal from "../motion/Reveal";
 import { FAQ_ITEMS, CONTACT } from "@/lib/content";
@@ -43,13 +43,13 @@ const Faq = () => {
                   </p>
 
                   <div className="relative mt-6 flex flex-col gap-2.5">
-                    <Link
+                    <ScrollLink
                       href="#contact"
                       className="flex items-center justify-center gap-2 rounded-full bg-brand-indigo px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-indigo-dark"
                     >
                       Demander mon étude gratuite
                       <LuArrowRight size={16} />
-                    </Link>
+                    </ScrollLink>
 
                     <a
                       href={CONTACT.whatsapp}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
+import ScrollLink from "../ScrollLink";
 import { AnimatePresence, motion } from "framer-motion";
 import { LuArrowRight } from "react-icons/lu";
 
@@ -51,7 +51,7 @@ export default function StickyMobileBar() {
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
             className="pointer-events-auto"
           >
-            <Link
+            <ScrollLink
               href="#contact"
               className="group flex items-center gap-2.5 rounded-full border border-white/12 bg-black/75 py-2 pl-5 pr-2 text-white shadow-[0_16px_40px_-12px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-transform duration-300 active:scale-95"
             >
@@ -61,7 +61,7 @@ export default function StickyMobileBar() {
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-indigo transition-transform duration-300 group-active:scale-90">
                 <LuArrowRight size={17} />
               </span>
-            </Link>
+            </ScrollLink>
           </motion.div>
         )}
       </AnimatePresence>

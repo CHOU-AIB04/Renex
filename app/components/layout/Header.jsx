@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LuPhone } from "react-icons/lu";
 import MobileSheet from "./MobileSheet";
+import ScrollLink from "../ScrollLink";
 import { navItems } from "@/lib/menu";
 import Btn1 from "../Btn1";
 
@@ -61,7 +62,7 @@ export default function Header() {
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-9">
           {navItems.map((item) => (
-            <Link
+            <ScrollLink
               key={item.title}
               href={item.href}
               className={`group relative text-[11px] font-bold uppercase tracking-[0.14em] transition-colors duration-300 ${
@@ -77,7 +78,7 @@ export default function Header() {
                   scrolled ? "bg-brand-indigo" : "bg-white"
                 }`}
               />
-            </Link>
+            </ScrollLink>
           ))}
         </nav>
 

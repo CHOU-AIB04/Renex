@@ -1,6 +1,6 @@
 import React from "react";
+import ScrollLink from "../ScrollLink";
 import Image from "next/image";
-import Link from "next/link";
 import Wrapper from "../wrapper";
 import Btn1 from "../Btn1";
 import { LuStar, LuAward, LuShieldCheck, LuLayers } from "react-icons/lu";
@@ -84,12 +84,12 @@ const Hero = () => {
           >
             <Btn1 text="Demandez votre simulation solaire →" href="#contact" />
 
-            <Link
+            <ScrollLink
               href="#realisations"
               className="rounded-full border border-white/30 px-8 py-4 text-[15px] font-semibold text-white text-center transition-all duration-300 hover:border-white hover:bg-white hover:text-black"
             >
               Voir nos réalisations
-            </Link>
+            </ScrollLink>
           </div>
 
           {/* Trust badges */}

@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
+import ScrollLink from "../ScrollLink";
 import Image from "next/image";
-import Link from "next/link";
 import Wrapper from "../wrapper";
 import Reveal from "../motion/Reveal";
 import { LuArrowRight, LuMapPin } from "react-icons/lu";
@@ -59,7 +59,7 @@ const Realisations = () => {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <Link
+            <ScrollLink
               href="#contact"
               className="group hidden sm:inline-flex items-center gap-2 text-sm font-semibold text-brand-indigo"
             >
@@ -68,7 +68,7 @@ const Realisations = () => {
                 size={17}
                 className="transition-transform duration-300 group-hover:translate-x-1.5"
               />
-            </Link>
+            </ScrollLink>
           </Reveal>
         </div>
 
@@ -112,7 +112,7 @@ const Realisations = () => {
         </div>
 
         {/* Mobile link */}
-        <Link
+        <ScrollLink
           href="#contact"
           className="group mt-10 inline-flex items-center gap-2 text-sm font-semibold text-brand-indigo sm:hidden"
         >
@@ -121,7 +121,7 @@ const Realisations = () => {
             size={17}
             className="transition-transform duration-300 group-hover:translate-x-1.5"
           />
-        </Link>
+        </ScrollLink>
       </Wrapper>
     </section>
   );
