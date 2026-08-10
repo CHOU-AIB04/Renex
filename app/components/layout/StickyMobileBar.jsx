@@ -1,17 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { LuArrowRight } from "react-icons/lu";
-import LeadFormDialog from "../LeadFormDialog";
 
 /**
  * Mobile CRO element — a single floating "dynamic island" CTA.
  *
- * Behaviour mirrors the header: hidden while the hero is on screen, then it
- * springs up into a blurred pill once the visitor starts scrolling. It hides
- * again when the final contact section is in view, since the form is right
- * there and the island would only cover it.
+ * Scrolls the visitor down to the inline form in the contact section rather
+ * than opening a popup, so there's one form experience on mobile.
+ *
+ * Behaviour mirrors the header: hidden while the hero is on screen, springs up
+ * once scrolling starts, and hides again when the contact section is in view
+ * (the form is right there — the island would only cover it).
  */
 export default function StickyMobileBar() {
   const [visible, setVisible] = useState(false);
@@ -20,7 +22,6 @@ export default function StickyMobileBar() {
     const onScroll = () => {
       const scrolledPastHero = window.scrollY > 420;
 
-      // Hide once the contact section enters the viewport
       const contact = document.getElementById("contact");
       let contactInView = false;
       if (contact) {
@@ -50,18 +51,17 @@ export default function StickyMobileBar() {
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
             className="pointer-events-auto"
           >
-            <LeadFormDialog
-              trigger={
-                <button className="group flex items-center gap-2.5 rounded-full border border-white/12 bg-black/75 py-2 pl-5 pr-2 text-white shadow-[0_16px_40px_-12px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-transform duration-300 active:scale-95">
-                  <span className="text-[13px] font-semibold whitespace-nowrap">
-                    Mon étude gratuite
-                  </span>
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-indigo transition-transform duration-300 group-active:scale-90">
-                    <LuArrowRight size={17} />
-                  </span>
-                </button>
-              }
-            />
+            <Link
+              href="#contact"
+              className="group flex items-center gap-2.5 rounded-full border border-white/12 bg-black/75 py-2 pl-5 pr-2 text-white shadow-[0_16px_40px_-12px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-transform duration-300 active:scale-95"
+            >
+              <span className="text-[13px] font-semibold whitespace-nowrap">
+                Mon étude gratuite
+              </span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-indigo transition-transform duration-300 group-active:scale-90">
+                <LuArrowRight size={17} />
+              </span>
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>

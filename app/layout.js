@@ -8,7 +8,8 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   display: "swap", // show text immediately with the fallback, swap when ready
-  weight: ["400", "500", "600", "700", "800"],
+  // 200/300 power the oversized ultra-thin figures in the stats section
+  weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata = {

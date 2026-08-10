@@ -1,19 +1,10 @@
-"use client";
-
 import React from "react";
 import Image from "next/image";
 import Wrapper from "../wrapper";
-import LeadFormDialog from "../LeadFormDialog";
-import { motion } from "framer-motion";
-import { LuCheck, LuPhone, LuMail, LuMapPin, LuArrowRight } from "react-icons/lu";
-
-// TODO: replace with the real client contact details
-const PHONE = "06 00 00 00 00";
-const PHONE_HREF = "tel:+212600000000";
-const EMAIL = "contact@renex.ma";
-
-const IMG =
-  "https://res.cloudinary.com/drn1zdkwa/image/upload/v1785795032/pexels-wiki15-canton-598594475-28681439_puec73.jpg";
+import GhlForm from "../GhlForm";
+import Reveal from "../motion/Reveal";
+import { CONTACT, IMG } from "@/lib/content";
+import { LuCheck, LuPhone, LuMail, LuMapPin } from "react-icons/lu";
 
 const guarantees = [
   "Étude gratuite",
@@ -22,8 +13,18 @@ const guarantees = [
 ];
 
 const contacts = [
-  { icon: LuPhone, label: "Appelez-nous", value: PHONE, href: PHONE_HREF },
-  { icon: LuMail, label: "Écrivez-nous", value: EMAIL, href: `mailto:${EMAIL}` },
+  {
+    icon: LuPhone,
+    label: "Appelez-nous",
+    value: CONTACT.phone,
+    href: CONTACT.phoneHref,
+  },
+  {
+    icon: LuMail,
+    label: "Écrivez-nous",
+    value: CONTACT.email,
+    href: `mailto:${CONTACT.email}`,
+  },
   {
     icon: LuMapPin,
     label: "Basés à Casablanca",
@@ -34,33 +35,30 @@ const contacts = [
 const CtaSection = () => {
   return (
     <section id="contact" className="px-[5%] pb-20 sm:pb-28">
-      <div className="relative overflow-hidden rounded-3xl bg-black">
-        {/* Background */}
+      <div className="grain relative overflow-hidden rounded-3xl bg-black">
         <Image
           src={IMG}
           alt=""
           fill
-          className="object-cover opacity-40"
+          className="object-cover opacity-25"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/85 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/90 to-black/70" />
 
         <Wrapper className="relative py-20 sm:py-24">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 lg:items-center"
-          >
+          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-12 lg:gap-16">
             {/* Left — message */}
-            <div>
-              <span className="block t-eyebrow text-amber-500 ">
+            <Reveal>
+              <span className="block t-eyebrow text-zinc-300">
                 Votre avenir commence maintenant
               </span>
-              <h2 className="mt-4 max-w-lg t-h2 text-white">
-                Construisons votre indépendance énergétique.
+              <h2 className="mt-4 max-w-md t-h2 text-white">
+                Demandez votre simulation solaire.
               </h2>
+              <p className="mt-4 max-w-sm t-body text-gray-400">
+                Remplissez le formulaire, un conseiller RENEX analyse votre
+                situation et vous rappelle sous 24h.
+              </p>
 
               <ul className="mt-8 space-y-3">
                 {guarantees.map((item) => (
@@ -72,33 +70,17 @@ const CtaSection = () => {
                   </li>
                 ))}
               </ul>
-            </div>
+            </Reveal>
 
-            {/* Right — CTA card */}
-            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 backdrop-blur-sm">
-              <p className="text-lg font-bold text-white">
-                Recevez votre étude solaire personnalisée
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-gray-400">
-                Dites-nous en deux minutes où vous en êtes. Un conseiller RENEX
-                vous rappelle sous 24h avec une estimation de production et de
-                rentabilité.
-              </p>
-
-              <LeadFormDialog
-                trigger={
-                  <button className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-brand-indigo py-4 text-sm font-semibold text-white transition hover:bg-brand-indigo-dark">
-                    Demander mon étude gratuite
-                    <LuArrowRight size={18} />
-                  </button>
-                }
-              />
-
-              <p className="mt-4 text-center text-[11px] text-gray-500">
-                🔒 Vos données restent confidentielles. Pas de spam.
-              </p>
-            </div>
-          </motion.div>
+            {/* Right — embedded form, inline on the page.
+                White card: the embed carries its own light theme, so a dark
+                glass wrapper would leave it looking pasted on. */}
+            <Reveal delay={0.1}>
+              <div className="overflow-hidden rounded-3xl bg-white p-3 shadow-[0_2px_6px_rgba(0,0,0,0.18),0_30px_60px_-24px_rgba(0,0,0,0.5)] sm:p-4">
+                <GhlForm />
+              </div>
+            </Reveal>
+          </div>
 
           {/* Contact strip */}
           <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 border-t border-white/10 pt-8">
