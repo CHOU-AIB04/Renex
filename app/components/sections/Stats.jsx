@@ -76,7 +76,7 @@ const Stats = () => {
         </Reveal>
 
         {/* Extra side padding so the row breathes inside the section */}
-        <div className="mx-auto mt-16 grid max-w-7xl grid-cols-6 gap-y-12 gap-x-4 px-2 sm:gap-x-8 sm:px-10 lg:grid-cols-5 lg:gap-x-10 lg:px-16 xl:px-0">
+        <div className="mx-auto mt-16 grid max-w-7xl grid-cols-6 gap-y-12 gap-x-6 px-2 sm:gap-x-8 sm:px-10 lg:grid-cols-5 lg:gap-x-10 lg:px-16 xl:px-0">
           {stats.map((stat, i) => (
             <Reveal
               key={stat.label}

@@ -71,7 +71,7 @@ const WhySolar = () => {
   return (
     <section
       id="pourquoi-solaire"
-      className="surface-tint section-lg"
+      className="surface-tint section-lg pb-20"
       style={{
         // Faint ruled-paper lines, like the reference board
         backgroundImage:

@@ -17,7 +17,7 @@ import { LuStar, LuAward, LuShieldCheck, LuLayers } from "react-icons/lu";
 
 // Figures per the client report (RNO-RP213)
 const trustBadges = [
-  { icon: LuStar, label: "4,9/5 sur Google" },
+  { icon: LuStar, label: "+98% de satisfaction" },
   { icon: LuAward, label: "+100 installations" },
   { icon: LuShieldCheck, label: "30 ans de garantie" },
   { icon: LuLayers, label: "Matériel Tier 1" },
@@ -62,7 +62,7 @@ const Hero = () => {
             Solar Home+
           </span>
 
-          <h1 className="mt-6 t-display text-white text-5xl md:text-6xl">
+          <h1 className="mt-6 t-display text-white text-[40px] md:text-6xl">
             Vous payez plus de <br className="hidden md:block" />
             2 000 DH d'électricité
             par mois ?
