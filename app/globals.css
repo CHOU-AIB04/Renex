@@ -222,10 +222,10 @@ body {
      Alternating large / medium vertical rhythm so the page breathes
      instead of marching at one constant interval. */
   .section-lg {
-    @apply py-10 sm:py-15;
+    @apply py-5 sm:py-10;
   }
   .section-md {
-    @apply py-16 sm:py-15;
+    @apply py-5 sm:py-10;
   }
 }
 

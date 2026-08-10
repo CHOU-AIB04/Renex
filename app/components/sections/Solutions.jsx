@@ -43,7 +43,7 @@ const Solutions = () => {
     <section id="solutions" className="surface-base section-lg">
       <Wrapper>
         {/* Soft gradient panel, like the reference */}
-        <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-white via-[#F4F6FC] to-[#E8EDF9] px-6 py-14 sm:px-12 sm:py-16 lg:px-16">
+        <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-white via-[#F4F6FC] to-[#E8EDF9] px-2 py-14 sm:px-12 sm:py-16 lg:px-16">
           <Reveal>
             <span className="block t-eyebrow text-brand-indigo">
               Nos solutions
@@ -66,7 +66,7 @@ const Solutions = () => {
               ) => (
                 <Reveal key={name} delay={i * 0.1}>
                   <article
-                    className={`group relative flex h-full flex-col overflow-hidden rounded-[28px] p-8 transition-all duration-500 hover:-translate-y-1.5 ${
+                    className={`group relative flex h-full flex-col overflow-hidden rounded-[28px] p-4 md:p-8 transition-all duration-500 hover:-translate-y-1.5 ${
                       featured
                         ? "bg-gradient-to-br from-[#243073] via-brand-indigo to-brand-navy shadow-[0_24px_60px_-24px_rgba(27,36,100,0.7)]"
                         : "border border-black/[0.07] bg-white/70 shadow-[0_1px_2px_rgba(16,24,40,0.04)]"

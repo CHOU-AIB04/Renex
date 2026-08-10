@@ -85,9 +85,9 @@ const MobileSheet = ({ scrolled }) => {
                           href={item.href}
                           className="group flex items-center justify-between"
                         >
-                          <div className="flex items-center gap-5">
+                          <div className="flex items-center gap-3">
                             <Icon size={24} className="text-white/70" />
-                            <span className="font-bold tracking-[3px] text-white text-[12px]">
+                            <span className="font-bold tracking-[3px] text-white text-[10px]">
                               {item.title}
                             </span>
                           </div>

@@ -34,7 +34,7 @@ const contacts = [
 
 const CtaSection = () => {
   return (
-    <section id="contact" className="px-[5%] pb-20 sm:pb-28">
+    <section id="contact" className="px-[2%] md:px-[5%] pb-20 sm:pb-28">
       <div className="grain relative overflow-hidden rounded-3xl bg-black">
         <Image
           src={IMG}

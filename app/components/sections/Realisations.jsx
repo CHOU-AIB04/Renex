@@ -73,7 +73,7 @@ const Realisations = () => {
         </div>
 
         {/* Asymmetric gallery */}
-        <div className="mt-14 grid grid-cols-1 sm:grid-cols-4 gap-4 sm:auto-rows-[220px]">
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-4 gap-4 sm:auto-rows-[220px]">
           {projects.map((project, i) => (
             <Reveal
               key={project.title}
@@ -112,7 +112,7 @@ const Realisations = () => {
         </div>
 
         {/* Mobile link */}
-        <ScrollLink
+        {/* <ScrollLink
           href="#contact"
           className="group mt-10 inline-flex items-center gap-2 text-sm font-semibold text-brand-indigo sm:hidden"
         >
@@ -121,7 +121,7 @@ const Realisations = () => {
             size={17}
             className="transition-transform duration-300 group-hover:translate-x-1.5"
           />
-        </ScrollLink>
+        </ScrollLink> */}
       </Wrapper>
     </section>
   );

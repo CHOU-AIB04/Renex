@@ -90,7 +90,7 @@ const Stats = () => {
                 <div className="relative inline-block">
                   <Accent index={i} />
 
-                  <p className="relative text-[38px] sm:text-5xl lg:text-[52px] font-bold leading-none tracking-tight text-brand-indigo tabular-nums">
+                  <p className="relative text-[30px] sm:text-5xl lg:text-[52px] font-bold leading-none tracking-tight text-brand-indigo tabular-nums">
                     {stat.text ? (
                       <span className="flex items-center justify-center lg:justify-start">
                         {stat.text}

@@ -94,7 +94,7 @@ const Hero = () => {
 
           {/* Trust badges */}
           <div
-            className="anim-fade-up mt-8 flex flex-wrap gap-x-5 gap-y-2.5"
+            className="anim-fade-up mt-8 grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-2.5"
             style={{ animationDelay: "240ms" }}
           >
             {trustBadges.map(({ icon: Icon, label }) => (
