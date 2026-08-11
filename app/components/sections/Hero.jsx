@@ -18,8 +18,8 @@ import { LuStar, LuAward, LuShieldCheck, LuLayers } from "react-icons/lu";
 // Figures per the client report (RNO-RP213)
 const trustBadges = [
   { icon: LuStar, label: "+98% de satisfaction" },
-  { icon: LuAward, label: "+100 installations" },
   { icon: LuShieldCheck, label: "30 ans de garantie" },
+  { icon: LuAward, label: "+100 installations" },
   { icon: LuLayers, label: "Matériel Tier 1" },
 ];
 
@@ -56,7 +56,7 @@ const Hero = () => {
 
       {/* Content */}
       <Wrapper className="relative z-10 flex min-h-[100dvh] items-center pt-32 pb-34">
-        <div className="max-w-2xl ">
+        <div className="max-w-3xl">
           {/* Eyebrow + headline render immediately — no fade, no delay */}
           <span className="inline-block rounded-full border border-white/25 bg-white/5 px-4 py-1.5 t-eyebrow text-white">
             Solar Home+
@@ -100,7 +100,7 @@ const Hero = () => {
             {trustBadges.map(({ icon: Icon, label }) => (
               <div
                 key={label}
-                className="flex items-center gap-2 text-[13px] font-medium text-white/70"
+                className="flex items-center gap-2 text-[11px] md:text-[13px] font-medium text-white/70"
               >
                 <Icon size={15} className="text-white/90" />
                 {label}
