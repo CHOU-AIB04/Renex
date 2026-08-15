@@ -31,7 +31,7 @@ const Hero = () => {
     >
       {/* Background — LCP image */}
       <Image
-        src="https://res.cloudinary.com/drn1zdkwa/image/upload/v1786365201/0ea84f7b73e0bc0443f1f1d6b1246048_1786365149_mud6tg.png"
+        src="https://res.cloudinary.com/drn1zdkwa/image/upload/v1786826892/1ae317da1fc999b1d5755e406212ccdb_1786826538656_oeskul.png"
         alt="Installation solaire premium sur toiture de villa au Maroc"
         fill
         priority

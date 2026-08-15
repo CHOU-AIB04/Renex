@@ -44,7 +44,7 @@ const Why = () => {
       <Wrapper className="relative">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:items-end">
           <Reveal>
-            <span className="block t-eyebrow text-zinc-300">
+            <span className="block t-eyebrow text-zinc-300 mt-5 md:mt-0">
               Pourquoi Renex ?
             </span>
             <h2 className="mt-4 t-h2 text-white">

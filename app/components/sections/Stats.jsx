@@ -2,6 +2,7 @@ import React from "react";
 import Wrapper from "../wrapper";
 import Reveal from "../motion/Reveal";
 import Counter from "../motion/Counter";
+import Btn1 from "../Btn1";
 
 /**
  * Key figures — centred heading, then a row of oversized numbers each backed by
@@ -114,6 +115,13 @@ const Stats = () => {
             </Reveal>
           ))}
         </div>
+
+        {/* CTA */}
+        <Reveal delay={0.2}>
+          <div className="mt-8 md:mt-16 flex justify-center">
+            <Btn1 text="Rejoignez-les — étude gratuite →" href="#contact" />
+          </div>
+        </Reveal>
       </Wrapper>
     </section>
   );

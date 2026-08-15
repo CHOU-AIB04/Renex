@@ -8,6 +8,41 @@ import { FAQ_ITEMS, CONTACT } from "@/lib/content";
 import { LuPlus, LuArrowRight } from "react-icons/lu";
 import { FaWhatsapp } from "react-icons/fa";
 
+/** Shared CTA card — sits in the left column on desktop, under the accordion on mobile. */
+const CtaCard = ({ className = "" }) => (
+  <div
+    className={`surface-ink grain relative overflow-hidden rounded-3xl p-7 ${className}`}
+  >
+    <p className="relative text-base font-bold text-white">
+      Vous préférez en parler ?
+    </p>
+    <p className="relative mt-2 text-sm leading-relaxed text-gray-400">
+      Un conseiller RENEX répond à vos questions et estime votre projet
+      gratuitement.
+    </p>
+
+    <div className="relative mt-6 flex flex-col gap-2.5">
+      <ScrollLink
+        href="#contact"
+        className="flex items-center justify-center gap-2 rounded-full bg-brand-indigo px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-indigo-dark"
+      >
+        Demander mon étude gratuite
+        <LuArrowRight size={16} />
+      </ScrollLink>
+
+      <a
+        href={CONTACT.whatsapp}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+      >
+        <FaWhatsapp size={16} />
+        Écrire sur WhatsApp
+      </a>
+    </div>
+  </div>
+);
+
 const Faq = () => {
   const [open, setOpen] = useState(0);
 
@@ -31,37 +66,10 @@ const Faq = () => {
                 </p>
               </Reveal>
 
-              {/* Fills the previously empty left column with a real CTA */}
+              {/* Desktop only — the mobile copy sits below the accordion so
+                  visitors read the answers before hitting the CTA. */}
               <Reveal delay={0.1}>
-                <div className="surface-ink grain relative mt-10 max-w-sm overflow-hidden rounded-3xl p-7">
-                  <p className="relative text-base font-bold text-white">
-                    Vous préférez en parler ?
-                  </p>
-                  <p className="relative mt-2 text-sm leading-relaxed text-gray-400">
-                    Un conseiller RENEX répond à vos questions et estime votre
-                    projet gratuitement.
-                  </p>
-
-                  <div className="relative mt-6 flex flex-col gap-2.5">
-                    <ScrollLink
-                      href="#contact"
-                      className="flex items-center justify-center gap-2 rounded-full bg-brand-indigo px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-indigo-dark"
-                    >
-                      Demander mon étude gratuite
-                      <LuArrowRight size={16} />
-                    </ScrollLink>
-
-                    <a
-                      href={CONTACT.whatsapp}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                    >
-                      <FaWhatsapp size={16} />
-                      Écrire sur WhatsApp
-                    </a>
-                  </div>
-                </div>
+                <CtaCard className="mt-10 hidden max-w-sm lg:block" />
               </Reveal>
             </div>
           </div>
@@ -116,6 +124,7 @@ const Faq = () => {
             })}
           </div>
         </div>
+     
       </Wrapper>
     </section>
   );

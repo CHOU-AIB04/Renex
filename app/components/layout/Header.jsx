@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LuPhone } from "react-icons/lu";
-import MobileSheet from "./MobileSheet";
 import ScrollLink from "../ScrollLink";
 import { navItems } from "@/lib/menu";
 import Btn1 from "../Btn1";
@@ -29,10 +28,12 @@ export default function Header() {
     // Centred with auto margins, not -translate-x-1/2: the CSS entrance
     // animation owns `transform`, so a Tailwind transform utility would be
     // overwritten and the bar would jump out of centre.
+    // `absolute` on mobile so the bar scrolls away with the hero instead of
+    // following the user down; `fixed` only from lg up.
     <header
-      className={`anim-slide-down fixed top-0 left-0 right-0 mx-auto z-50 w-[95%] md:w-[85%] rounded-b-[24px] transition-[background-color,box-shadow] duration-500 ${
+      className={`anim-slide-down absolute lg:fixed top-0 left-0 right-0 mx-auto z-50 w-[95%] md:w-[85%] rounded-b-[24px] transition-[background-color,box-shadow] duration-500 ${
         scrolled
-          ? "bg-white/85 backdrop-blur-xl shadow-[0_10px_40px_-20px_rgba(0,0,0,0.45)]"
+          ? "lg:bg-white/85 lg:backdrop-blur-xl lg:shadow-[0_10px_40px_-20px_rgba(0,0,0,0.45)]"
           : "bg-transparent"
       }`}
     >
@@ -59,13 +60,13 @@ export default function Header() {
           />
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-9">
+        {/* Desktop Navigation — tighter type/spacing at 1280px, roomier at xl */}
+        <nav className="hidden lg:flex items-center gap-5 xl:gap-9">
           {navItems.map((item) => (
             <ScrollLink
               key={item.title}
               href={item.href}
-              className={`group relative text-[11px] font-bold uppercase tracking-[0.14em] transition-colors duration-300 ${
+              className={`group relative whitespace-nowrap text-[9.5px] xl:text-[11px] font-bold uppercase tracking-[0.08em] xl:tracking-[0.14em] transition-colors duration-300 ${
                 scrolled
                   ? "text-gray-500 hover:text-gray-900"
                   : "text-white/75 hover:text-white"
@@ -98,9 +99,6 @@ export default function Header() {
 
           <Btn1 text="Étude gratuite" href="#contact" size="sm" />
         </div>
-
-        {/* Mobile */}
-        <MobileSheet scrolled={scrolled} />
       </div>
     </header>
   );

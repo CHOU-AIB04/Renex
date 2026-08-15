@@ -5,6 +5,7 @@ import ScrollLink from "../ScrollLink";
 import Image from "next/image";
 import Wrapper from "../wrapper";
 import Reveal from "../motion/Reveal";
+import Btn1 from "../Btn1";
 import { LuArrowRight, LuMapPin } from "react-icons/lu";
 
 // Asymmetric layout: one hero tile + three supporting tiles.
@@ -59,16 +60,13 @@ const Realisations = () => {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <ScrollLink
+           <div className="hidden md:block">
+             <Btn1
+              text="Demandez votre simulation solaire →"
               href="#contact"
-              className="group hidden sm:inline-flex items-center gap-2 text-sm font-semibold text-brand-indigo"
-            >
-              Voir toutes nos réalisations
-              <LuArrowRight
-                size={17}
-                className="transition-transform duration-300 group-hover:translate-x-1.5"
-              />
-            </ScrollLink>
+              className="shrink-0"
+            />
+           </div>
           </Reveal>
         </div>
 
@@ -111,17 +109,7 @@ const Realisations = () => {
           ))}
         </div>
 
-        {/* Mobile link */}
-        {/* <ScrollLink
-          href="#contact"
-          className="group mt-10 inline-flex items-center gap-2 text-sm font-semibold text-brand-indigo sm:hidden"
-        >
-          Voir toutes nos réalisations
-          <LuArrowRight
-            size={17}
-            className="transition-transform duration-300 group-hover:translate-x-1.5"
-          />
-        </ScrollLink> */}
+       
       </Wrapper>
     </section>
   );

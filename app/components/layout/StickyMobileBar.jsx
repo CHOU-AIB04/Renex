@@ -44,21 +44,47 @@ export default function StickyMobileBar() {
     >
       <AnimatePresence>
         {visible && (
+          // Deliberately punchy entrance: shoots up from off-screen with an
+          // overshoot, then a quick settle-bounce. The previous gentle fade
+          // was too easy to miss.
           <motion.div
-            initial={{ opacity: 0, y: 28, scale: 0.86 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className="pointer-events-auto"
+            initial={{ opacity: 0, y: 90, scale: 0.65 }}
+            animate={{
+              opacity: 1,
+              y: [90, -14, 4, 0],
+              scale: [0.65, 1.12, 0.97, 1],
+            }}
+            exit={{ opacity: 0, y: 40, scale: 0.8, transition: { duration: 0.18 } }}
+            transition={{
+              duration: 0.62,
+              times: [0, 0.45, 0.72, 1],
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            className="pointer-events-auto relative"
           >
+            {/* Attention halo — pulses a few times right after arrival */}
+            <motion.span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-full bg-brand-indigo"
+              initial={{ opacity: 0.55, scale: 1 }}
+              animate={{ opacity: 0, scale: 1.35 }}
+              transition={{
+                duration: 1.1,
+                repeat: 2,
+                repeatDelay: 0.35,
+                delay: 0.5,
+                ease: "easeOut",
+              }}
+            />
+
             <ScrollLink
               href="#contact"
-              className="group flex items-center gap-2.5 rounded-full border border-white/12 bg-black/75 py-2 pl-5 pr-2 text-white shadow-[0_16px_40px_-12px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-transform duration-300 active:scale-95"
+              className="group relative flex items-center gap-2.5 rounded-full border border-white/15 bg-black/85 py-2 pl-5 pr-2 text-white shadow-[0_18px_44px_-10px_rgba(0,0,0,0.9),0_0_0_1px_rgba(27,36,100,0.5)] backdrop-blur-2xl transition-transform duration-200 active:scale-95"
             >
               <span className="text-[13px] font-semibold whitespace-nowrap">
                 Mon étude gratuite
               </span>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-indigo transition-transform duration-300 group-active:scale-90">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-indigo shadow-[0_0_18px_-2px_rgba(27,36,100,0.9)] transition-transform duration-200 group-active:scale-90">
                 <LuArrowRight size={17} />
               </span>
             </ScrollLink>

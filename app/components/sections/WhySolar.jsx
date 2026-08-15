@@ -1,6 +1,7 @@
 import React from "react";
 import Wrapper from "../wrapper";
 import Reveal from "../motion/Reveal";
+import Btn1 from "../Btn1";
 
 /**
  * "Pourquoi passer au solaire ?" — pinned sticky-note cards.
@@ -142,6 +143,16 @@ const WhySolar = () => {
             </Reveal>
           ))}
         </div>
+
+        {/* CTA */}
+        <Reveal delay={0.15}>
+          <div className="mt-14 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-center">
+            <p className="t-body text-gray-500">
+              Combien pourriez-vous économiser&nbsp;?
+            </p>
+            <Btn1 text="Demandez votre simulation solaire →" href="#contact" />
+          </div>
+        </Reveal>
       </Wrapper>
     </section>
   );
