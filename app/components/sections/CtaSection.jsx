@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Wrapper from "../wrapper";
-import GhlForm from "../GhlForm";
+import LeadForm from "../LeadForm";
 import Reveal from "../motion/Reveal";
 import { CONTACT, IMG } from "@/lib/content";
 import { LuCheck, LuPhone, LuMail, LuMapPin } from "react-icons/lu";
@@ -72,12 +72,10 @@ const CtaSection = () => {
               </ul>
             </Reveal>
 
-            {/* Right — embedded form, inline on the page.
-                White card: the embed carries its own light theme, so a dark
-                glass wrapper would leave it looking pasted on. */}
+            {/* Right — the form itself, inline on the page */}
             <Reveal delay={0.1}>
-              <div className="overflow-hidden rounded-3xl bg-white p-3 shadow-[0_2px_6px_rgba(0,0,0,0.18),0_30px_60px_-24px_rgba(0,0,0,0.5)] sm:p-4">
-                <GhlForm />
+              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 sm:p-8">
+                <LeadForm tone="dark" />
               </div>
             </Reveal>
           </div>

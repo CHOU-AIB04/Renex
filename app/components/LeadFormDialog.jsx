@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { LuX } from "react-icons/lu";
-import GhlForm from "./GhlForm";
+import LeadForm from "./LeadForm";
 
 export default function LeadFormDialog({ trigger }) {
   return (
@@ -43,7 +43,7 @@ export default function LeadFormDialog({ trigger }) {
 
         {/* Body */}
         <div className="max-h-[75vh] overflow-y-auto bg-white px-7 py-8 sm:px-10">
-          <GhlForm />
+          <LeadForm tone="light" />
         </div>
       </DialogContent>
     </Dialog>
