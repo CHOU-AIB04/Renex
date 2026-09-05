@@ -25,37 +25,30 @@ const trustBadges = [
 ];
 
 const Hero = () => {
-  // check if it's in mobile version on no 
-  const [isMobile,SetisMobile] = useState(()=>{
-     return window.innerWidth
-  })
-  
-  useEffect(()=>{
-    const widthresizer = (()=>{
-        let width = window.innerWidth
-        SetisMobile(width)
-    })
-    window.addEventListener("resize",widthresizer)
-    return () => {
-    window.removeEventListener("resize", widthresizer);
-  };
-  },[])
+
   return (
     <section
       id="hero"
       className="relative min-h-[100dvh] overflow-hidden rounded-b-[48px] md:rounded-b-[100px]"
     >
       {/* Background — LCP image */}
-      <Image
-        src={isMobile < 700 ? "https://res.cloudinary.com/drn1zdkwa/image/upload/v1788620939/Gemini_Generated_Image_2e83h52e83h52e83_1_wgfzo9.png" : "https://res.cloudinary.com/drn1zdkwa/image/upload/v1788619182/RENEX_CLOSUP_1_k2dll3.png"}
-        alt="Installation solaire premium sur toiture de villa au Maroc"
-        fill
-        priority
-        fetchPriority="high"
-        quality={70}
-        sizes="100vw"
-        className="object-cover animate-hero-zoom"
-      />
+      <picture>
+        <source
+          media="(max-width: 699px)"
+          srcSet="https://res.cloudinary.com/drn1zdkwa/image/upload/v1788620939/Gemini_Generated_Image_2e83h52e83h52e83_1_wgfzo9.png"
+        />
+
+        <Image
+          src="https://res.cloudinary.com/drn1zdkwa/image/upload/v1788619182/RENEX_CLOSUP_1_k2dll3.png"
+          alt="Installation solaire premium sur toiture de villa au Maroc"
+          fill
+          priority
+          fetchPriority="high"
+          quality={70}
+          sizes="100vw"
+          className="object-cover animate-hero-zoom"
+        />
+      </picture>
 
       {/* Overlay — bottom-heavy on mobile, left-heavy on desktop */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/15 md:bg-gradient-to-r md:from-black/95 md:via-black/60 md:to-transparent" />
