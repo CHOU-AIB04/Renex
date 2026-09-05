@@ -28,7 +28,7 @@ const contacts = [
   {
     icon: LuMapPin,
     label: "Basés à Casablanca",
-    value: "Intervention partout au Maroc",
+    value: "Oasis Offices Latitude, Route de l’Oasis, Maarif, Casablanca",
   },
 ];
 

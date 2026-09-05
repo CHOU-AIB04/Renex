@@ -9,8 +9,8 @@ import { navItems } from "@/lib/menu";
 import Btn1 from "../Btn1";
 
 // TODO: replace with the real client phone number
-const PHONE_NUMBER = "06 00 00 00 00";
-const PHONE_HREF = "tel:+212600000000";
+const PHONE_NUMBER = "06 69 91 38 59";
+const PHONE_HREF = "tel:+212669913859";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);

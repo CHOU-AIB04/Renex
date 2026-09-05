@@ -30,7 +30,7 @@ const solutions = [
     description:
       "Votre surplus de production est stocké dans une batterie et réutilisé le soir. Vous atteignez une quasi-indépendance énergétique.",
     points: [
-      "Batterie Huawei incluse",
+      "Batterie de stockage incluse",
       "Énergie disponible la nuit",
       "Protection contre les coupures",
     ],

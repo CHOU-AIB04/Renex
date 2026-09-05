@@ -119,7 +119,7 @@ const Stats = () => {
         {/* CTA */}
         <Reveal delay={0.2}>
           <div className="mt-8 md:mt-16 flex justify-center">
-            <Btn1 text="Rejoignez-les — étude gratuite →" href="#contact" />
+            <Btn1 text="Demandez votre simulation solaire →" href="#contact" />
           </div>
         </Reveal>
       </Wrapper>

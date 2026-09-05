@@ -115,7 +115,7 @@ const Footer = () => {
               </li>
               <li className="flex items-start gap-3 text-sm text-gray-400">
                 <LuMapPin size={16} className="mt-0.5 shrink-0" />
-                Casablanca — intervention partout au Maroc
+                Casablanca — Oasis Offices Latitude, Route de l’Oasis, Maarif, Casablanca
               </li>
             </ul>
           </div>

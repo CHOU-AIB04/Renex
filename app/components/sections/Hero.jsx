@@ -1,4 +1,5 @@
-import React from "react";
+"use client"
+import React, { useEffect, useState } from "react";
 import ScrollLink from "../ScrollLink";
 import Image from "next/image";
 import Wrapper from "../wrapper";
@@ -24,6 +25,21 @@ const trustBadges = [
 ];
 
 const Hero = () => {
+  // check if it's in mobile version on no 
+  const [isMobile,SetisMobile] = useState(()=>{
+     return window.innerWidth
+  })
+  
+  useEffect(()=>{
+    const widthresizer = (()=>{
+        let width = window.innerWidth
+        SetisMobile(width)
+    })
+    window.addEventListener("resize",widthresizer)
+    return () => {
+    window.removeEventListener("resize", widthresizer);
+  };
+  },[])
   return (
     <section
       id="hero"
@@ -31,7 +47,7 @@ const Hero = () => {
     >
       {/* Background — LCP image */}
       <Image
-        src="https://res.cloudinary.com/drn1zdkwa/image/upload/v1786826892/1ae317da1fc999b1d5755e406212ccdb_1786826538656_oeskul.png"
+        src={isMobile < 700 ? "https://res.cloudinary.com/drn1zdkwa/image/upload/v1788620939/Gemini_Generated_Image_2e83h52e83h52e83_1_wgfzo9.png" : "https://res.cloudinary.com/drn1zdkwa/image/upload/v1788619182/RENEX_CLOSUP_1_k2dll3.png"}
         alt="Installation solaire premium sur toiture de villa au Maroc"
         fill
         priority

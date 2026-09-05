@@ -15,9 +15,9 @@ import {
 import { FaWhatsapp } from "react-icons/fa";
 
 // TODO: replace with the real client phone / WhatsApp number
-const PHONE_HREF = "tel:+212600000000";
+const PHONE_HREF = "tel:+212669913859";
 const WHATSAPP_HREF =
-  "https://wa.me/212600000000?text=Bonjour%2C%20je%20viens%20de%20demander%20mon%20%C3%A9tude%20solaire%20gratuite";
+  "https://wa.me/212719001583?text=Bonjour%2C%20je%20viens%20de%20demander%20mon%20%C3%A9tude%20solaire%20gratuite";
 
 const IMG =
   "https://res.cloudinary.com/drn1zdkwa/image/upload/v1785795032/pexels-wiki15-canton-598594475-28681439_puec73.jpg";
@@ -147,7 +147,7 @@ export default function ThankYou() {
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-indigo/25">
                   <Icon size={15} className="text-white" />
                 </span>
-                <span className="text-[11px] font-bold tracking-[0.18em] text-brand-indigo">
+                <span className="text-[11px] font-bold tracking-[0.18em] text-white">
                   0{i + 1}
                 </span>
               </div>
