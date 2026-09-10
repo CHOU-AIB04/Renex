@@ -1,14 +1,12 @@
+import Script from "next/script";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import StickyMobileBar from "./components/layout/StickyMobileBar";
 
-// Inter only — the brand guide specifies a single typeface, and loading
-// unused families was costing two extra font downloads on every page view.
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  display: "swap", // show text immediately with the fallback, swap when ready
-  // 200/300 power the oversized ultra-thin figures in the stats section
+  display: "swap",
   weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
 
@@ -22,12 +20,51 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr" className={`${inter.variable} h-full antialiased`}>
       <head>
-        {/* Warm up the image CDN connection before the hero image is requested */}
-        <link rel="preconnect" href="https://res.cloudinary.com" />
-        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        {/* Google Tag Manager - HEAD */}
+        <Script id="google-tag-manager" strategy="beforeInteractive">
+          {`
+            (function(w,d,s,l,i){
+              w[l]=w[l]||[];
+              w[l].push({
+                'gtm.start': new Date().getTime(),
+                event:'gtm.js'
+              });
+              var f=d.getElementsByTagName(s)[0],
+                  j=d.createElement(s),
+                  dl=l!='dataLayer'?'&l='+l:'';
+              j.async=true;
+              j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+              f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-NQXQ3TTD');
+          `}
+        </Script>
+
+        <link
+          rel="preconnect"
+          href="https://res.cloudinary.com"
+        />
+        <link
+          rel="dns-prefetch"
+          href="https://res.cloudinary.com"
+        />
       </head>
+
       <body className="min-h-full flex flex-col">
+        {/* Google Tag Manager - BODY */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-NQXQ3TTD"
+            height="0"
+            width="0"
+            style={{
+              display: "none",
+              visibility: "hidden",
+            }}
+          />
+        </noscript>
+
         {children}
+
         <StickyMobileBar />
       </body>
     </html>

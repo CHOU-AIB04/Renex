@@ -29,13 +29,13 @@ const Hero = () => {
   return (
     <section
       id="hero"
-      className="relative min-h-[100dvh] overflow-hidden rounded-b-[48px] md:rounded-b-[100px]"
+      className="relative min-h-[100dvh] overflow-hidden rounded-b-[50px] md:rounded-b-[100px]"
     >
       {/* Background — LCP image */}
       <picture>
         <source
           media="(max-width: 699px)"
-          srcSet="https://res.cloudinary.com/drn1zdkwa/image/upload/v1788620939/Gemini_Generated_Image_2e83h52e83h52e83_1_wgfzo9.png"
+          srcSet="https://res.cloudinary.com/drn1zdkwa/image/upload/v1788734323/WhatsApp_Image_2026-09-06_at_03.25.58_u9j32e.jpg"
         />
 
         <Image
