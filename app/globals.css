@@ -17,6 +17,10 @@ body {
   font-family: var(--font-inter);
   background: var(--surface-base);
 }
+html{
+  scroll-padding-top: 200px;
+  scroll-behavior: smooth;
+}
 
 @theme inline {
   --font-heading: var(--font-inter);
@@ -314,4 +318,7 @@ body {
 /* netlify badge */
 #nl-badge{
   display: none !important
+}
+.nl-wrap{
+   display: none !important
 }
