@@ -310,3 +310,8 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* netlify badge */
+#nl-badge{
+  display: none !important
+}

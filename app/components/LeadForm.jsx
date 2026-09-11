@@ -123,6 +123,10 @@ export default function LeadForm({ tone = "light" }) {
       if (typeof window !== "undefined" && window.fbq) {
         window.fbq("track", "Lead", {}, { eventID: tracking.current.event_id });
       }
+      window.dataLayer.push({
+        event: "generate_lead",
+        form_name: "contact-form",
+      });
 
       router.push("/merci");
     } catch {
@@ -155,7 +159,7 @@ export default function LeadForm({ tone = "light" }) {
     }`;
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} id="contact-form">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
         {/* Nom */}
         <div>
