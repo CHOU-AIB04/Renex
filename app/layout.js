@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
     <html lang="fr" className={`${inter.variable} h-full antialiased`}>
       <head>
         {/* Google Tag Manager - HEAD */}
-        <Script id="google-tag-manager" strategy="beforeInteractive">
+        {/* <Script id="google-tag-manager" strategy="beforeInteractive">
           {`
             (function(w,d,s,l,i){
               w[l]=w[l]||[];
@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
               f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','GTM-NQXQ3TTD');
           `}
-        </Script>
+        </Script> */}
 
         <link
           rel="preconnect"
@@ -51,7 +51,7 @@ export default function RootLayout({ children }) {
 
       <body className="min-h-full flex flex-col">
         {/* Google Tag Manager - BODY */}
-        <noscript>
+        {/* <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-NQXQ3TTD"
             height="0"
@@ -61,7 +61,7 @@ export default function RootLayout({ children }) {
               visibility: "hidden",
             }}
           />
-        </noscript>
+        </noscript> */}
 
         {children}
 
