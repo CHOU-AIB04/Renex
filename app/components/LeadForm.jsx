@@ -120,12 +120,15 @@ export default function LeadForm({ tone = "light" }) {
       });
       if (!res.ok) throw new Error("Request failed");
 
-      if (typeof window !== "undefined" && window.fbq) {
-        window.fbq("track", "Lead", {}, { eventID: tracking.current.event_id });
-      }
+      // Tracking centralise dans GTM : le container ecoute cet evenement et
+      // declenche lui-meme le Lead Meta. On transmet event_id pour que le tag
+      // le passe en eventID, ce qui permet la deduplication avec un eventuel
+      // event serveur (CAPI) portant le meme identifiant.
+      window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: "generate_lead",
         form_name: "contact-form",
+        event_id: tracking.current.event_id,
       });
 
       router.push("/merci");
