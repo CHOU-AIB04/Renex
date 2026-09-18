@@ -4,9 +4,57 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FORM_OPTIONS } from "@/lib/content";
 
-// Posts to our own API route, which forwards to the n8n webhook server-side.
-// See app/api/lead/route.js — this sidesteps CORS and hides the webhook URL.
+// Posts to our own API routes, which forward to the n8n webhooks server-side.
+// See app/api/lead/route.js (complete lead) and app/api/lead-step1/route.js
+// (partial lead) — this sidesteps CORS and hides the webhook URLs.
 const SUBMIT_ENDPOINT = "/api/lead";
+const STEP1_ENDPOINT = "/api/lead-step1";
+
+// Attribution keys. Always present in every payload (empty string when
+// unknown) so the n8n mapping never has to deal with a missing field.
+const TRACKING_KEYS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+  "utm_id",
+  "fbclid",
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "ttclid",
+  "msclkid",
+];
+
+// UTMs only exist on the landing URL. Persisting them means a visitor who
+// navigates, reloads, or opens the popup on another page still submits the
+// attribution of the ad they arrived from.
+const TRACKING_STORAGE_KEY = "renex_attribution";
+
+const emptyTracking = () =>
+  TRACKING_KEYS.reduce((acc, k) => ({ ...acc, [k]: "" }), {});
+
+const readStoredTracking = () => {
+  try {
+    const raw =
+      window.sessionStorage.getItem(TRACKING_STORAGE_KEY) ||
+      window.localStorage.getItem(TRACKING_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const storeTracking = (data) => {
+  try {
+    const raw = JSON.stringify(data);
+    window.sessionStorage.setItem(TRACKING_STORAGE_KEY, raw);
+    window.localStorage.setItem(TRACKING_STORAGE_KEY, raw);
+  } catch {
+    /* private mode / storage full — attribution falls back to the URL only */
+  }
+};
 
 /**
  * Lead capture form, split into two steps.
@@ -43,27 +91,40 @@ export default function LeadForm({ tone = "light" }) {
     consent: false,
   });
 
-  // Capture UTM / click ids so the CRM can attribute the lead to the ad
+  // Capture UTM / click ids so the CRM can attribute the lead to the ad.
+  // Priority for each key: current URL → stored earlier in the visit → "".
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const data = {};
-    [
-      "utm_source",
-      "utm_medium",
-      "utm_campaign",
-      "utm_content",
-      "utm_term",
-      "fbclid",
-      "gclid",
-    ].forEach((k) => {
-      const v = params.get(k);
-      if (v) data[k] = v;
+    const stored = readStoredTracking();
+
+    const attribution = emptyTracking();
+    let foundInUrl = false;
+
+    TRACKING_KEYS.forEach((k) => {
+      const fromUrl = params.get(k);
+      if (fromUrl) {
+        attribution[k] = fromUrl;
+        foundInUrl = true;
+      } else if (stored[k]) {
+        attribution[k] = stored[k];
+      }
     });
-    data.page_url = window.location.href;
-    data.event_id = `lead_${Date.now()}_${Math.random()
-      .toString(36)
-      .slice(2, 9)}`;
-    tracking.current = data;
+
+    // Keep the entry point of the visit, not the page the form sits on
+    attribution.landing_url =
+      (foundInUrl ? window.location.href : stored.landing_url) ||
+      window.location.href;
+    attribution.referrer = stored.referrer || document.referrer || "";
+
+    storeTracking(attribution);
+
+    tracking.current = {
+      ...attribution,
+      page_url: window.location.href,
+      event_id: `lead_${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2, 9)}`,
+    };
 
     router.prefetch("/merci");
   }, [router]);
@@ -104,10 +165,11 @@ export default function LeadForm({ tone = "light" }) {
     form.fullName.trim().length > 1 &&
     // 9 digits exactly, once the leading 0 is stripped (e.g. 612345678)
     form.phone.length === 9 &&
+    form.city &&
     form.consent;
 
   const step2Valid =
-    form.profile && form.city && form.housing && form.roof && form.bill && form.stage;
+    form.profile && form.housing && form.roof && form.bill && form.stage;
 
   const pushDataLayer = (payload) => {
     window.dataLayer = window.dataLayer || [];
@@ -124,7 +186,7 @@ export default function LeadForm({ tone = "light" }) {
     if (partialSent.current) return;
     partialSent.current = true;
 
-    fetch(SUBMIT_ENDPOINT, {
+    fetch(STEP1_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       keepalive: true,
@@ -132,8 +194,12 @@ export default function LeadForm({ tone = "light" }) {
         fullName: form.fullName,
         phone: fullPhone,
         phone_local: form.phone,
+        city: form.city,
         consent: form.consent,
         form_stage: "partial",
+        // Attribution always travels with the partial lead. emptyTracking()
+        // guarantees the keys exist even if the effect above hasn't run.
+        ...emptyTracking(),
         ...tracking.current,
       }),
     }).catch(() => {});
@@ -171,6 +237,7 @@ export default function LeadForm({ tone = "light" }) {
           phone: fullPhone,
           phone_local: form.phone,
           form_stage: "complete",
+          ...emptyTracking(),
           ...tracking.current,
         }),
       });
@@ -312,6 +379,27 @@ export default function LeadForm({ tone = "light" }) {
             </p>
           </div>
 
+          {/* Ville */}
+          <div className="sm:col-span-2">
+            <label htmlFor="city" className={label}>
+              Ville *
+            </label>
+            <select
+              id="city"
+              required
+              value={form.city}
+              onChange={set("city")}
+              className={field}
+            >
+              <option value="">Sélectionner…</option>
+              {FORM_OPTIONS.cities.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Consentement — en étape 1 : c'est ici que le contact devient joignable */}
           <label className="sm:col-span-2 flex items-start gap-3">
             <input
@@ -332,44 +420,6 @@ export default function LeadForm({ tone = "light" }) {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-          {/* Vous êtes ? */}
-          <div className="sm:col-span-2">
-            <span className={label}>Vous êtes ? *</span>
-            <div className="flex flex-wrap gap-2">
-              {FORM_OPTIONS.profile.map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => pick("profile", opt)}
-                  className={chip(form.profile === opt)}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Ville */}
-          <div>
-            <label htmlFor="city" className={label}>
-              Ville *
-            </label>
-            <select
-              id="city"
-              required
-              value={form.city}
-              onChange={set("city")}
-              className={field}
-            >
-              <option value="">Sélectionner…</option>
-              {FORM_OPTIONS.cities.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Logement */}
           <div>
             <label htmlFor="housing" className={label}>
@@ -413,7 +463,7 @@ export default function LeadForm({ tone = "light" }) {
           </div>
 
           {/* Facture */}
-          <div>
+          <div className="md:col-span-2">
             <label htmlFor="bill" className={label}>
               Facture mensuelle moyenne *
             </label>
@@ -431,6 +481,23 @@ export default function LeadForm({ tone = "light" }) {
                 </option>
               ))}
             </select>
+          </div>
+
+           {/* Vous êtes ? */}
+          <div className="md:col-span-2">
+            <span className={label}>Vous êtes ? *</span>
+            <div className="flex flex-wrap gap-2">
+              {FORM_OPTIONS.profile.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => pick("profile", opt)}
+                  className={chip(form.profile === opt)}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Avancement */}
