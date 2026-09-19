@@ -74,7 +74,7 @@ const CtaSection = () => {
 
             {/* Right — the form itself, inline on the page */}
             <Reveal delay={0.1}>
-              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 sm:p-8">
+              <div className="rounded-3xl border border-white/10 bg-[#151A41] p-6 sm:p-8">
                 <LeadForm tone="dark" />
               </div>
             </Reveal>

@@ -284,7 +284,7 @@ export default function LeadForm({ tone = "light" }) {
     }`;
 
   const primaryBtn =
-    "flex w-full sm:w-auto shrink-0 items-center justify-center rounded-full bg-brand-indigo px-10 py-4 text-sm font-semibold text-white transition hover:bg-brand-indigo-dark disabled:cursor-not-allowed disabled:opacity-40";
+    "flex w-full sm:w-auto shrink-0 items-center justify-center rounded-full bg-white text-brand-indigo px-10 py-4 text-sm font-semibold transition hover:bg-brand-indigo-dark disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
     <form onSubmit={step === 1 ? handleNext : handleSubmit} id="contact-form">
@@ -292,11 +292,11 @@ export default function LeadForm({ tone = "light" }) {
       <div className="mb-5 flex items-center gap-3">
         <div
           className={`h-1 flex-1 overflow-hidden rounded-full ${
-            dark ? "bg-white/10" : "bg-gray-200"
+            dark ? "bg-[white/10]" : "bg-gray-200"
           }`}
         >
           <div
-            className="h-full rounded-full bg-brand-indigo transition-all duration-300"
+            className="h-full rounded-full bg-white transition-all duration-300"
             style={{ width: step === 1 ? "50%" : "100%" }}
           />
         </div>
