@@ -1,19 +1,22 @@
 /**
- * Partial-lead forwarding endpoint (step 1 of the 2-step form).
+ * Recovery endpoint — step 2 completed from the 24h follow-up link.
  *
- * The browser posts the step-1 fields here (nom, téléphone, consentement) plus
- * the full attribution block, and this route forwards them to n8n
- * server-side — same reasoning as
- * app/api/lead/route.js: no CORS, and the webhook URL stays out of the client
- * bundle.
+ * The CRM messages the leads who stopped after step 1 and sends them back to
+ * the landing page with ?contact_id=…&name=…&phone=…&city=…. LeadForm detects
+ * those params, opens step 2 directly, and posts here instead of /api/lead so
+ * the n8n workflow can UPDATE the existing contact (contact_id) rather than
+ * create a new one.
+ *
+ * Same reasoning as the other routes: server-side forward, so no CORS and the
+ * webhook URL stays out of the client bundle.
  *
  * Production webhook (/webhook/ path — the n8n workflow must be activated).
- * Override with the LEAD_STEP1_WEBHOOK_URL env var if needed, e.g. to point at
- * the /webhook-test/ path while editing the workflow.
+ * Override with the LEAD_RECOVERY_WEBHOOK_URL env var if needed, e.g. to point
+ * at the /webhook-test/ path while editing the workflow.
  */
 const WEBHOOK_URL =
-  process.env.LEAD_STEP1_WEBHOOK_URL ||
-  "https://automate.wepushx.com/webhook/cc8e6eff-ed80-49a1-92f2-655ccb18f899";
+  process.env.LEAD_RECOVERY_WEBHOOK_URL ||
+  "https://automate.wepushx.com/webhook/bae7736d-0d47-46e4-b0af-0a249910071d";
 
 // Always emitted, even when empty, so the n8n mapping never sees a missing key.
 const TRACKING_KEYS = [
@@ -48,8 +51,10 @@ export async function POST(request) {
     const enriched = {
       ...payload,
       ...tracking,
-      form_step: 1,
-      partial: true,
+      // The CRM record to update — empty means the link was missing contact_id
+      contact_id: payload.contact_id ?? "",
+      form_stage: "recovered",
+      recovered: true,
       submitted_at: new Date().toISOString(),
       // Useful for spotting bot traffic / debugging in the CRM
       user_agent: request.headers.get("user-agent") ?? "",
@@ -63,7 +68,7 @@ export async function POST(request) {
 
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
-      console.error("Step-1 webhook rejected:", res.status, detail);
+      console.error("Recovery webhook rejected:", res.status, detail);
       return Response.json(
         { ok: false, error: `Webhook responded ${res.status}` },
         { status: 502 }
@@ -72,7 +77,7 @@ export async function POST(request) {
 
     return Response.json({ ok: true });
   } catch (error) {
-    console.error("Step-1 webhook failed:", error);
+    console.error("Recovery webhook failed:", error);
     return Response.json(
       { ok: false, error: "Impossible de transmettre la demande." },
       { status: 500 }

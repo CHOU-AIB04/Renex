@@ -9,6 +9,30 @@ import { FORM_OPTIONS } from "@/lib/content";
 // (partial lead) — this sidesteps CORS and hides the webhook URLs.
 const SUBMIT_ENDPOINT = "/api/lead";
 const STEP1_ENDPOINT = "/api/lead-step1";
+// Relance : quand le visiteur revient depuis le message de rappel (24h), la
+// soumission de l'étape 2 part sur ce webhook-là, avec le contact_id du CRM.
+const RECOVERY_ENDPOINT = "/api/lead-recovery";
+
+// Params posés par le CRM sur le lien de relance :
+// ?contact_id=…&name=…&phone=…&city=… (+ les utm_* repassés tels quels)
+
+// Tolérance sur le nommage des params, au cas où le workflow n8n change
+const readParam = (params, names) => {
+  for (const n of names) {
+    const v = params.get(n);
+    if (v) return v.trim();
+  }
+  return "";
+};
+
+// "+212612345678", "0612345678", "212 6 12 34 56 78" → "612345678"
+const toLocalPhone = (raw) =>
+  String(raw || "")
+    .replace(/\D/g, "")
+    .replace(/^0+/, "")
+    .replace(/^212/, "")
+    .replace(/^0+/, "")
+    .slice(0, 9);
 
 // Attribution keys. Always present in every payload (empty string when
 // unknown) so the n8n mapping never has to deal with a missing field.
@@ -16,6 +40,9 @@ const TRACKING_KEYS = [
   "utm_source",
   "utm_medium",
   "utm_campaign",
+  // Orthographe utilisée côté CRM — envoyée en plus de utm_campaign, et
+  // acceptée en entrée : les deux clés portent toujours la même valeur.
+  "utm_compaign",
   "utm_content",
   "utm_term",
   "utm_id",
@@ -26,6 +53,9 @@ const TRACKING_KEYS = [
   "ttclid",
   "msclkid",
 ];
+
+// Clés qui doivent rester synchronisées entre elles (variantes d'écriture)
+const TRACKING_MIRRORS = [["utm_campaign", "utm_compaign"]];
 
 // UTMs only exist on the landing URL. Persisting them means a visitor who
 // navigates, reloads, or opens the popup on another page still submits the
@@ -78,6 +108,8 @@ export default function LeadForm({ tone = "light" }) {
   const [error, setError] = useState("");
   const tracking = useRef({});
   const partialSent = useRef(false);
+  // Renseigné uniquement quand on arrive depuis le lien de relance
+  const [recovery, setRecovery] = useState(null);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -110,6 +142,13 @@ export default function LeadForm({ tone = "light" }) {
       }
     });
 
+    // utm_campaign / utm_compaign : peu importe l'orthographe reçue dans l'URL,
+    // les deux repartent renseignées vers n8n.
+    TRACKING_MIRRORS.forEach(([a, b]) => {
+      if (attribution[a] && !attribution[b]) attribution[b] = attribution[a];
+      else if (attribution[b] && !attribution[a]) attribution[a] = attribution[b];
+    });
+
     // Keep the entry point of the visit, not the page the form sits on
     attribution.landing_url =
       (foundInUrl ? window.location.href : stored.landing_url) ||
@@ -125,6 +164,47 @@ export default function LeadForm({ tone = "light" }) {
         .toString(36)
         .slice(2, 9)}`,
     };
+
+    /* ─── Relance 24h ──────────────────────────────────────────────────────
+       Le CRM renvoie le lead qui s'est arrêté à l'étape 1 avec
+       ?contact_id=…&name=…&phone=…&city=… : on préremplit ce qu'il a déjà
+       donné et on ouvre directement l'étape 2. Le partiel n'est PAS renvoyé
+       (le contact existe déjà côté CRM). */
+    const contactId = readParam(params, ["contact_id", "contactId", "cid"]);
+    const name = readParam(params, ["name", "fullName", "full_name", "nom"]);
+    const phoneParam = readParam(params, ["phone", "telephone", "tel"]);
+    const cityParam = readParam(params, ["city", "ville"]);
+
+    if (contactId || (name && phoneParam)) {
+      const localPhone = toLocalPhone(phoneParam);
+
+      setForm((f) => ({
+        ...f,
+        fullName: name || f.fullName,
+        phone: localPhone || f.phone,
+        city: cityParam || f.city,
+        // Le consentement a déjà été donné à l'étape 1
+        consent: true,
+      }));
+
+      setRecovery({
+        contact_id: contactId,
+        name,
+        phone: phoneParam,
+        city: cityParam,
+      });
+
+      // Le contact est déjà dans le CRM : pas de second envoi de partiel
+      partialSent.current = true;
+      setStep(2);
+
+      pushDataLayer({
+        event: "form_recovery_open",
+        form_name: "contact-form",
+        contact_id: contactId,
+        event_id: tracking.current.event_id,
+      });
+    }
 
     router.prefetch("/merci");
   }, [router]);
@@ -227,7 +307,9 @@ export default function LeadForm({ tone = "light" }) {
     setError("");
 
     try {
-      const res = await fetch(SUBMIT_ENDPOINT, {
+      // Relance : le lead existe déjà dans le CRM, l'étape 2 part donc sur le
+      // webhook de récupération avec son contact_id, pas sur le webhook normal.
+      const res = await fetch(recovery ? RECOVERY_ENDPOINT : SUBMIT_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // Send the phone in full international form so the CRM can dial /
@@ -236,7 +318,9 @@ export default function LeadForm({ tone = "light" }) {
           ...form,
           phone: fullPhone,
           phone_local: form.phone,
-          form_stage: "complete",
+          form_stage: recovery ? "recovered" : "complete",
+          recovered: Boolean(recovery),
+          contact_id: recovery?.contact_id || "",
           ...emptyTracking(),
           ...tracking.current,
         }),
@@ -250,6 +334,8 @@ export default function LeadForm({ tone = "light" }) {
       pushDataLayer({
         event: "generate_lead",
         form_name: "contact-form",
+        form_stage: recovery ? "recovered" : "complete",
+        contact_id: recovery?.contact_id || "",
         event_id: tracking.current.event_id,
       });
 
@@ -284,7 +370,7 @@ export default function LeadForm({ tone = "light" }) {
     }`;
 
   const primaryBtn =
-    "flex w-full sm:w-auto shrink-0 items-center justify-center rounded-full bg-white text-brand-indigo px-10 py-4 text-sm font-semibold transition hover:bg-brand-indigo-dark disabled:cursor-not-allowed disabled:opacity-40";
+    "flex w-full sm:w-auto shrink-0 items-center justify-center rounded-full bg-white text-brand-indigo px-10 py-4 text-sm font-semibold transition hover:scale-102 cursor-pointer disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
     <form onSubmit={step === 1 ? handleNext : handleSubmit} id="contact-form">
@@ -308,6 +394,28 @@ export default function LeadForm({ tone = "light" }) {
           Étape {step} sur 2
         </span>
       </div>
+
+      {/* Relance : on rassure le visiteur, ses infos sont déjà enregistrées */}
+      {recovery && (
+        <div
+          className={`mb-5 rounded-xl border px-4 py-3 text-xs leading-relaxed ${
+            dark
+              ? "border-white/15 bg-white/[0.06] text-white/75"
+              : "border-gray-200 bg-gray-50 text-gray-600"
+          }`}
+        >
+          {recovery.name ? (
+            <>
+              Bon retour <strong>{recovery.name}</strong> — vos coordonnées sont
+              déjà enregistrées.
+            </>
+          ) : (
+            <>Vos coordonnées sont déjà enregistrées.</>
+          )}{" "}
+          Il ne reste que quelques informations sur votre projet pour recevoir
+          votre étude gratuite.
+        </div>
+      )}
 
       {step === 1 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
