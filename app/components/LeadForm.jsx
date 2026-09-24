@@ -5,12 +5,10 @@ import { useRouter } from "next/navigation";
 import { FORM_OPTIONS } from "@/lib/content";
 
 // Posts to our own API routes, which forward to the n8n webhooks server-side.
-// See app/api/lead/route.js (complete lead) and app/api/lead-step1/route.js
-// (partial lead) — this sidesteps CORS and hides the webhook URLs.
+// See app/api/lead/route.js — this sidesteps CORS and hides the webhook URLs.
 const SUBMIT_ENDPOINT = "/api/lead";
-const STEP1_ENDPOINT = "/api/lead-step1";
-// Relance : quand le visiteur revient depuis le message de rappel (24h), la
-// soumission de l'étape 2 part sur ce webhook-là, avec le contact_id du CRM.
+// Relance : quand le visiteur revient depuis un ancien message de rappel, la
+// soumission part sur ce webhook-là, avec le contact_id du CRM.
 const RECOVERY_ENDPOINT = "/api/lead-recovery";
 
 // Params posés par le CRM sur le lien de relance :
@@ -87,39 +85,32 @@ const storeTracking = (data) => {
 };
 
 /**
- * Lead capture form, split into two steps.
+ * Lead capture form, en une seule étape.
  *
- * Step 1 asks only for name, phone and consent — 8 required fields shown at
- * once were stopping 78% of the people who reached the form from even
- * starting it, on an audience that is 95% mobile.
- *
- * Step 1 is also sent to the CRM (`form_stage: "partial"`) so a visitor who
- * drops out at step 2 is still reachable. That partial payload does NOT
- * trigger the Meta Lead event: n8n filters it out, so the algorithm keeps
- * optimising for complete, qualified submissions only.
+ * Retour au formulaire unique à 6 champs après une semaine en 2 étapes
+ * (18-24/09) : 2,5 leads qualifiés pour 100 $ contre 9,9 avec ce formulaire,
+ * et 0,9 % des visites converties contre 4,6 %. Les contacts arrêtés à
+ * l'étape 1 se sont révélés à 74 % des clics par erreur ("Mistake" en CRM).
+ * "Profil" et "stade du projet" sont retirés : ils se demandent au téléphone.
  *
  * `tone="dark"` for the inline section on the dark CTA band,
  * `tone="light"` inside the white popup.
  */
 export default function LeadForm({ tone = "light" }) {
   const router = useRouter();
-  const [step, setStep] = useState(1);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const tracking = useRef({});
-  const partialSent = useRef(false);
   // Renseigné uniquement quand on arrive depuis le lien de relance
   const [recovery, setRecovery] = useState(null);
 
   const [form, setForm] = useState({
     fullName: "",
-    profile: "",
     phone: "",
     city: "",
     housing: "",
     roof: "",
     bill: "",
-    stage: "",
     consent: false,
   });
 
@@ -165,11 +156,10 @@ export default function LeadForm({ tone = "light" }) {
         .slice(2, 9)}`,
     };
 
-    /* ─── Relance 24h ──────────────────────────────────────────────────────
-       Le CRM renvoie le lead qui s'est arrêté à l'étape 1 avec
-       ?contact_id=…&name=…&phone=…&city=… : on préremplit ce qu'il a déjà
-       donné et on ouvre directement l'étape 2. Le partiel n'est PAS renvoyé
-       (le contact existe déjà côté CRM). */
+    /* ─── Relance ───────────────────────────────────────────────────────────
+       Les liens de rappel déjà envoyés portent
+       ?contact_id=…&name=…&phone=…&city=… : on préremplit ce que le visiteur
+       a déjà donné, il ne lui reste que les questions sur son projet. */
     const contactId = readParam(params, ["contact_id", "contactId", "cid"]);
     const name = readParam(params, ["name", "fullName", "full_name", "nom"]);
     const phoneParam = readParam(params, ["phone", "telephone", "tel"]);
@@ -183,7 +173,7 @@ export default function LeadForm({ tone = "light" }) {
         fullName: name || f.fullName,
         phone: localPhone || f.phone,
         city: cityParam || f.city,
-        // Le consentement a déjà été donné à l'étape 1
+        // Le consentement a déjà été donné lors de la première visite
         consent: true,
       }));
 
@@ -194,9 +184,6 @@ export default function LeadForm({ tone = "light" }) {
         city: cityParam,
       });
 
-      // Le contact est déjà dans le CRM : pas de second envoi de partiel
-      partialSent.current = true;
-      setStep(2);
 
       pushDataLayer({
         event: "form_recovery_open",
@@ -214,8 +201,6 @@ export default function LeadForm({ tone = "light" }) {
       ...f,
       [key]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
     }));
-
-  const pick = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
   /**
    * Phone: the +212 prefix is fixed in the UI, so we only keep the local part.
@@ -239,69 +224,24 @@ export default function LeadForm({ tone = "light" }) {
   // Full international number, built from the fixed prefix + what was typed
   const fullPhone = `+212${form.phone}`;
 
-  // Consent lives in step 1: that is where the contact reaches the CRM and
-  // becomes callable, so it cannot wait for step 2.
-  const step1Valid =
+  const formValid =
     form.fullName.trim().length > 1 &&
     // 9 digits exactly, once the leading 0 is stripped (e.g. 612345678)
     form.phone.length === 9 &&
     form.city &&
+    form.housing &&
+    form.roof &&
+    form.bill &&
     form.consent;
-
-  const step2Valid =
-    form.profile && form.housing && form.roof && form.bill && form.stage;
 
   const pushDataLayer = (payload) => {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push(payload);
   };
 
-  /**
-   * Fire-and-forget so the visitor moves to step 2 instantly. `keepalive`
-   * keeps the request alive even if they navigate away right after, and a
-   * failure here is deliberately silent: step 2 will resend everything, and
-   * blocking someone on a partial save would cost more than it saves.
-   */
-  const sendPartial = () => {
-    if (partialSent.current) return;
-    partialSent.current = true;
-
-    fetch(STEP1_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      keepalive: true,
-      body: JSON.stringify({
-        fullName: form.fullName,
-        phone: fullPhone,
-        phone_local: form.phone,
-        city: form.city,
-        consent: form.consent,
-        form_stage: "partial",
-        // Attribution always travels with the partial lead. emptyTracking()
-        // guarantees the keys exist even if the effect above hasn't run.
-        ...emptyTracking(),
-        ...tracking.current,
-      }),
-    }).catch(() => {});
-  };
-
-  const handleNext = (e) => {
-    e.preventDefault();
-    if (!step1Valid) return;
-
-    sendPartial();
-    pushDataLayer({
-      event: "form_step_1",
-      form_name: "contact-form",
-      event_id: tracking.current.event_id,
-    });
-
-    setStep(2);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!step2Valid || sending) return;
+    if (!formValid || sending) return;
 
     setSending(true);
     setError("");
@@ -318,6 +258,9 @@ export default function LeadForm({ tone = "light" }) {
           ...form,
           phone: fullPhone,
           phone_local: form.phone,
+          // Champs retirés du formulaire, gardés vides pour le mapping n8n
+          profile: "",
+          stage: "",
           form_stage: recovery ? "recovered" : "complete",
           recovered: Boolean(recovery),
           contact_id: recovery?.contact_id || "",
@@ -360,41 +303,11 @@ export default function LeadForm({ tone = "light" }) {
       : "border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-brand-indigo focus:ring-2 focus:ring-brand-indigo/20"
   }`;
 
-  const chip = (active) =>
-    `rounded-full border px-4 py-2 text-xs font-semibold transition ${
-      active
-        ? "border-brand-indigo bg-brand-indigo text-white"
-        : dark
-          ? "border-white/15 bg-white/[0.04] text-white/70 hover:border-white/35"
-          : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-    }`;
-
   const primaryBtn =
     "flex w-full sm:w-auto shrink-0 items-center justify-center rounded-full bg-white text-brand-indigo px-10 py-4 text-sm font-semibold transition hover:scale-102 cursor-pointer disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
-    <form onSubmit={step === 1 ? handleNext : handleSubmit} id="contact-form">
-      {/* Progression — tells the visitor how short this actually is */}
-      <div className="mb-5 flex items-center gap-3">
-        <div
-          className={`h-1 flex-1 overflow-hidden rounded-full ${
-            dark ? "bg-[white/10]" : "bg-gray-200"
-          }`}
-        >
-          <div
-            className="h-full rounded-full bg-white transition-all duration-300"
-            style={{ width: step === 1 ? "50%" : "100%" }}
-          />
-        </div>
-        <span
-          className={`shrink-0 text-[11px] font-semibold ${
-            dark ? "text-white/50" : "text-gray-400"
-          }`}
-        >
-          Étape {step} sur 2
-        </span>
-      </div>
-
+    <form onSubmit={handleSubmit} id="contact-form">
       {/* Relance : on rassure le visiteur, ses infos sont déjà enregistrées */}
       {recovery && (
         <div
@@ -417,251 +330,195 @@ export default function LeadForm({ tone = "light" }) {
         </div>
       )}
 
-      {step === 1 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-          {/* Nom */}
-          <div>
-            <label htmlFor="fullName" className={label}>
-              Nom et prénom *
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              required
-              value={form.fullName}
-              onChange={set("fullName")}
-              placeholder="Youssef Bennani"
-              className={field}
-            />
-          </div>
-
-          {/* Téléphone — +212 is fixed, the visitor types the local number only */}
-          <div>
-            <label htmlFor="phone" className={label}>
-              Téléphone *
-            </label>
-            <div
-              className={`flex items-stretch overflow-hidden rounded-xl border transition ${
-                dark
-                  ? "border-white/15 bg-white/[0.06] focus-within:border-white/40 focus-within:ring-2 focus-within:ring-white/10"
-                  : "border-gray-200 bg-white focus-within:border-brand-indigo focus-within:ring-2 focus-within:ring-brand-indigo/20"
-              }`}
-            >
-              {/* No flag emoji: Windows renders regional-indicator pairs as
-                  bare letters ("MA"), which wrapped onto a second line. */}
-              <span
-                className={`flex shrink-0 select-none items-center whitespace-nowrap border-r px-3.5 text-sm font-semibold ${
-                  dark
-                    ? "border-white/15 bg-white/[0.04] text-white/80"
-                    : "border-gray-200 bg-gray-50 text-gray-600"
-                }`}
-              >
-                +212
-              </span>
-
-              <input
-                id="phone"
-                type="tel"
-                inputMode="numeric"
-                autoComplete="tel-national"
-                required
-                value={form.phone}
-                onChange={handlePhoneChange}
-                placeholder="6 00 00 00 00"
-                aria-describedby="phone-hint"
-                className={`w-full bg-transparent px-4 py-3 text-sm outline-none ${
-                  dark
-                    ? "text-white placeholder:text-white/35"
-                    : "text-gray-900 placeholder:text-gray-400"
-                }`}
-              />
-            </div>
-
-            <p
-              id="phone-hint"
-              className={`mt-1.5 text-[11px] ${
-                dark ? "text-white/40" : "text-gray-400"
-              }`}
-            >
-              Sans le 0 initial — ex. 6 12 34 56 78
-            </p>
-          </div>
-
-          {/* Ville */}
-          <div className="sm:col-span-2">
-            <label htmlFor="city" className={label}>
-              Ville *
-            </label>
-            <select
-              id="city"
-              required
-              value={form.city}
-              onChange={set("city")}
-              className={field}
-            >
-              <option value="">Sélectionner…</option>
-              {FORM_OPTIONS.cities.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Consentement — en étape 1 : c'est ici que le contact devient joignable */}
-          <label className="sm:col-span-2 flex items-start gap-3">
-            <input
-              type="checkbox"
-              checked={form.consent}
-              onChange={set("consent")}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-[#1b2464]"
-            />
-            <span
-              className={`text-xs leading-relaxed ${
-                dark ? "text-white/55" : "text-gray-500"
-              }`}
-            >
-              J&apos;accepte d&apos;être contacté par RENEX au sujet de ma
-              demande. *
-            </span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+        {/* Nom */}
+        <div>
+          <label htmlFor="fullName" className={label}>
+            Nom et prénom *
           </label>
+          <input
+            id="fullName"
+            type="text"
+            required
+            value={form.fullName}
+            onChange={set("fullName")}
+            placeholder="Youssef Bennani"
+            className={field}
+          />
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-          {/* Logement */}
-          <div>
-            <label htmlFor="housing" className={label}>
-              Type de logement *
-            </label>
-            <select
-              id="housing"
-              required
-              value={form.housing}
-              onChange={set("housing")}
-              className={field}
+
+        {/* Téléphone — +212 is fixed, the visitor types the local number only */}
+        <div>
+          <label htmlFor="phone" className={label}>
+            Téléphone *
+          </label>
+          <div
+            className={`flex items-stretch overflow-hidden rounded-xl border transition ${
+              dark
+                ? "border-white/15 bg-white/[0.06] focus-within:border-white/40 focus-within:ring-2 focus-within:ring-white/10"
+                : "border-gray-200 bg-white focus-within:border-brand-indigo focus-within:ring-2 focus-within:ring-brand-indigo/20"
+            }`}
+          >
+            {/* No flag emoji: Windows renders regional-indicator pairs as
+                bare letters ("MA"), which wrapped onto a second line. */}
+            <span
+              className={`flex shrink-0 select-none items-center whitespace-nowrap border-r px-3.5 text-sm font-semibold ${
+                dark
+                  ? "border-white/15 bg-white/[0.04] text-white/80"
+                  : "border-gray-200 bg-gray-50 text-gray-600"
+              }`}
             >
-              <option value="">Sélectionner…</option>
-              {FORM_OPTIONS.housing.map((h) => (
-                <option key={h} value={h}>
-                  {h}
-                </option>
-              ))}
-            </select>
-          </div>
+              +212
+            </span>
 
-          {/* Toiture */}
-          <div>
-            <label htmlFor="roof" className={label}>
-              Type de toiture *
-            </label>
-            <select
-              id="roof"
+            <input
+              id="phone"
+              type="tel"
+              inputMode="numeric"
+              autoComplete="tel-national"
               required
-              value={form.roof}
-              onChange={set("roof")}
-              className={field}
-            >
-              <option value="">Sélectionner…</option>
-              {FORM_OPTIONS.roof.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
+              value={form.phone}
+              onChange={handlePhoneChange}
+              placeholder="6 00 00 00 00"
+              aria-describedby="phone-hint"
+              className={`w-full bg-transparent px-4 py-3 text-sm outline-none ${
+                dark
+                  ? "text-white placeholder:text-white/35"
+                  : "text-gray-900 placeholder:text-gray-400"
+              }`}
+            />
           </div>
 
-          {/* Facture */}
-          <div className="md:col-span-2">
-            <label htmlFor="bill" className={label}>
-              Facture mensuelle moyenne *
-            </label>
-            <select
-              id="bill"
-              required
-              value={form.bill}
-              onChange={set("bill")}
-              className={field}
-            >
-              <option value="">Sélectionner…</option>
-              {FORM_OPTIONS.bills.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
-          </div>
-
-           {/* Vous êtes ? */}
-          <div className="md:col-span-2">
-            <span className={label}>Vous êtes ? *</span>
-            <div className="flex flex-wrap gap-2">
-              {FORM_OPTIONS.profile.map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => pick("profile", opt)}
-                  className={chip(form.profile === opt)}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Avancement */}
-          <div className="sm:col-span-2">
-            <span className={label}>Où en êtes-vous dans votre projet ? *</span>
-            <div className="flex flex-wrap gap-2">
-              {FORM_OPTIONS.stage.map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => pick("stage", opt)}
-                  className={chip(form.stage === opt)}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
+          <p
+            id="phone-hint"
+            className={`mt-1.5 text-[11px] ${
+              dark ? "text-white/40" : "text-gray-400"
+            }`}
+          >
+            Sans le 0 initial — ex. 6 12 34 56 78
+          </p>
         </div>
-      )}
+
+        {/* Ville */}
+        <div className="sm:col-span-2">
+          <label htmlFor="city" className={label}>
+            Ville *
+          </label>
+          <select
+            id="city"
+            required
+            value={form.city}
+            onChange={set("city")}
+            className={field}
+          >
+            <option value="">Sélectionner…</option>
+            {FORM_OPTIONS.cities.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Logement */}
+        <div>
+          <label htmlFor="housing" className={label}>
+            Type de logement *
+          </label>
+          <select
+            id="housing"
+            required
+            value={form.housing}
+            onChange={set("housing")}
+            className={field}
+          >
+            <option value="">Sélectionner…</option>
+            {FORM_OPTIONS.housing.map((h) => (
+              <option key={h} value={h}>
+                {h}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Toiture */}
+        <div>
+          <label htmlFor="roof" className={label}>
+            Type de toiture *
+          </label>
+          <select
+            id="roof"
+            required
+            value={form.roof}
+            onChange={set("roof")}
+            className={field}
+          >
+            <option value="">Sélectionner…</option>
+            {FORM_OPTIONS.roof.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Facture */}
+        <div className="sm:col-span-2">
+          <label htmlFor="bill" className={label}>
+            Facture mensuelle moyenne *
+          </label>
+          <select
+            id="bill"
+            required
+            value={form.bill}
+            onChange={set("bill")}
+            className={field}
+          >
+            <option value="">Sélectionner…</option>
+            {FORM_OPTIONS.bills.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Consentement */}
+        <label className="sm:col-span-2 flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={form.consent}
+            onChange={set("consent")}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[#1b2464]"
+          />
+          <span
+            className={`text-xs leading-relaxed ${
+              dark ? "text-white/55" : "text-gray-500"
+            }`}
+          >
+            J&apos;accepte d&apos;être contacté par RENEX au sujet de ma
+            demande. *
+          </span>
+        </label>
+      </div>
 
       {error && <p className="mt-4 text-xs font-medium text-brand-red">{error}</p>}
 
       <div className="mt-7 flex flex-col sm:flex-row-reverse sm:items-center gap-4">
         <button
           type="submit"
-          disabled={step === 1 ? !step1Valid : !step2Valid || sending}
+          disabled={!formValid || sending}
           className={primaryBtn}
         >
-          {step === 1
-            ? "Continuer"
-            : sending
-              ? "Envoi…"
-              : "Obtenir mon étude gratuite"}
+          {sending ? "Envoi…" : "Obtenir mon étude gratuite"}
         </button>
-
-        {step === 2 && (
-          <button
-            type="button"
-            onClick={() => setStep(1)}
-            className={`text-xs font-semibold underline-offset-4 hover:underline ${
-              dark ? "text-white/50" : "text-gray-400"
-            }`}
-          >
-            Retour
-          </button>
-        )}
 
         <p
           className={`text-center sm:text-left text-[11px] w-full leading-relaxed ${
             dark ? "text-white/40" : "text-gray-400"
           }`}
         >
-          {step === 1
-            ? "🔒 Vos données restent confidentielles. Pas de spam. Réponse en moins de 24h."
-            : "Plus qu'une étape — ces réponses nous permettent de dimensionner votre installation."}
+          🔒 Vos données restent confidentielles. Pas de spam. Réponse en moins de 24h.
         </p>
       </div>
     </form>
